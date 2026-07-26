@@ -1,0 +1,29 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #14181f;
+  color: #e7e5de;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+button {
+  font-family: inherit;
+}
+
+.leaflet-container {
+  background: #1c222c;
+  border-radius: 8px;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #1c222c;
+  color: #e7e5de;
+  border-radius: 8px;
+}
+
+.leaflet-popup-tip {
+  background: #1c222c;
+}
