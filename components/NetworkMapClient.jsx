@@ -36,10 +36,14 @@ function parseCSV(text) {
   const nameIdx = header.findIndex((h) => h === "name");
   const firstIdx = header.findIndex((h) => h.includes("first name"));
   const lastIdx = header.findIndex((h) => h.includes("last name"));
+  const orgIdx = header.findIndex((h) => h.includes("organization name"));
   const phoneIdx = header.findIndex((h) => h.includes("phone"));
   const emailIdx = header.findIndex(
     (h) => h.includes("e-mail") || h.includes("email")
   );
+  const areaIdx = header.findIndex((h) => h === "area");
+  const cityIdx = header.findIndex((h) => h === "city");
+  const tagsIdx = header.findIndex((h) => h === "tags");
 
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
@@ -51,11 +55,16 @@ function parseCSV(text) {
       const l = lastIdx >= 0 ? cells[lastIdx] || "" : "";
       name = `${f} ${l}`.trim();
     }
+    // Fall back to Organization Name for business contacts with no person name
+    if (!name && orgIdx >= 0 && cells[orgIdx]) name = cells[orgIdx];
     if (!name) continue;
     rows.push({
       name,
       phone: phoneIdx >= 0 ? cells[phoneIdx] || "" : "",
       email: emailIdx >= 0 ? cells[emailIdx] || "" : "",
+      area: areaIdx >= 0 ? cells[areaIdx] || "" : "",
+      city: cityIdx >= 0 ? cells[cityIdx] || "Lahore" : "Lahore",
+      tags: tagsIdx >= 0 && cells[tagsIdx] ? cells[tagsIdx].split("|").filter(Boolean) : [],
     });
   }
   return rows;
