@@ -42,6 +42,61 @@ Map and manage contacts by location. Built with Next.js (App Router), PostgreSQL
 - **Add / import tab** — paste a Google Contacts CSV export, preview the parse, then bulk-insert. Manual add for one-off contacts.
 - **API routes** (`app/api/contacts`) — `GET` list, `POST` create one, `PUT` bulk-create (used by the CSV importer), and `app/api/contacts/[id]` for `PATCH`/`DELETE`.
 
+## Emergency: if Claude isn't available
+
+Git and GitHub don't depend on Claude. Everything below works with or without AI help — this is the whole toolkit for keeping this project backed up and moving forward on your own.
+
+**Save progress (do this often):**
+```bash
+git add -A
+git commit -m "describe what changed"
+git push
+```
+`add -A` stages everything except what's in `.gitignore`. `commit` snapshots it locally. `push` sends it to GitHub. Nothing goes up until you run all three.
+
+**Check what's changed since your last commit:**
+```bash
+git status
+```
+
+**See your commit history:**
+```bash
+git log --oneline
+```
+
+**Undo to a previous commit (careful — this discards anything after it):**
+```bash
+git reset --hard <commit-hash>
+```
+
+**If `npm run dev` won't start:**
+1. Confirm Postgres is actually running and `.env.local` has the right `DATABASE_URL`.
+2. Delete `node_modules` and `.next`, then `npm install` again — fixes most dependency corruption.
+3. Read the actual error in the terminal before changing anything; Next.js errors usually name the file and line.
+
+**If a `git push` gets rejected for a large file:**
+Almost always means something in `node_modules` or `.next` got committed before `.gitignore` existed. Fix:
+```bash
+git rm -r --cached node_modules
+git rm -r --cached .next
+git add -A
+git commit -m "Remove build artifacts from tracking"
+git push
+```
+If that still fails because the large file is buried in old commit history, the clean reset is:
+```bash
+Remove-Item -Recurse -Force .git   # PowerShell; use `rm -rf .git` on Mac/Linux
+git init
+git add -A
+git commit -m "Clean commit"
+git branch -M master
+git remote add origin https://github.com/heredaniyal/networking-crm.git
+git push -u origin master --force
+```
+This discards commit history, not your files — fine for a personal backup repo, not fine for a team repo with real history worth keeping.
+
+**When genuinely stuck:** paste the exact error message (not a paraphrase) into a search engine or Stack Overflow. Git and Next.js are both extremely well-documented; the actual error text is almost always the fastest path to the fix.
+
 ## Known limitations / next steps
 
 - No auth — this is a single-user personal tool, not something to deploy publicly as-is.
