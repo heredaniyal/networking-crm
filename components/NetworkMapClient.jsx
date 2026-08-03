@@ -6,6 +6,123 @@ import { ZONES, LAHORE_CENTER, findZone } from "../lib/zones";
 
 const BASE_TAGS = ["Friend", "Professional", "APC", "Family", "Business"];
 
+// Country codes — format uses '#' as digit placeholder, other chars are literal separators
+const COUNTRY_CODES = [
+  { name: "Pakistan", code: "+92", flag: "🇵🇰", maxDigits: 10, format: "###-#######", placeholder: "300-1234567" },
+  { name: "United States", code: "+1", flag: "🇺🇸", maxDigits: 10, format: "(###) ###-####", placeholder: "(555) 123-4567" },
+  { name: "United Kingdom", code: "+44", flag: "🇬🇧", maxDigits: 10, format: "#### ######", placeholder: "7911 123456" },
+  { name: "India", code: "+91", flag: "🇮🇳", maxDigits: 10, format: "#####-#####", placeholder: "98765-43210" },
+  { name: "United Arab Emirates", code: "+971", flag: "🇦🇪", maxDigits: 9, format: "##-#######", placeholder: "50-1234567" },
+  { name: "Saudi Arabia", code: "+966", flag: "🇸🇦", maxDigits: 9, format: "##-#######", placeholder: "51-2345678" },
+  { name: "Canada", code: "+1", flag: "🇨🇦", maxDigits: 10, format: "(###) ###-####", placeholder: "(416) 123-4567" },
+  { name: "Australia", code: "+61", flag: "🇦🇺", maxDigits: 9, format: "### ### ###", placeholder: "412 345 678" },
+  { name: "Afghanistan", code: "+93", flag: "🇦🇫", maxDigits: 9, format: "##-#######", placeholder: "70-1234567" },
+  { name: "Albania", code: "+355", flag: "🇦🇱", maxDigits: 9, format: "###-######", placeholder: "067-212345" },
+  { name: "Algeria", code: "+213", flag: "🇩🇿", maxDigits: 9, format: "###-###-###", placeholder: "551-234-567" },
+  { name: "Argentina", code: "+54", flag: "🇦🇷", maxDigits: 10, format: "(###) ###-####", placeholder: "(911) 123-4567" },
+  { name: "Austria", code: "+43", flag: "🇦🇹", maxDigits: 10, format: "### #######", placeholder: "664 1234567" },
+  { name: "Azerbaijan", code: "+994", flag: "🇦🇿", maxDigits: 9, format: "##-###-##-##", placeholder: "40-123-45-67" },
+  { name: "Bahrain", code: "+973", flag: "🇧🇭", maxDigits: 8, format: "####-####", placeholder: "3600-1234" },
+  { name: "Bangladesh", code: "+880", flag: "🇧🇩", maxDigits: 10, format: "####-######", placeholder: "1711-123456" },
+  { name: "Belgium", code: "+32", flag: "🇧🇪", maxDigits: 9, format: "### ## ## ##", placeholder: "470 12 34 56" },
+  { name: "Bolivia", code: "+591", flag: "🇧🇴", maxDigits: 8, format: "####-####", placeholder: "7012-3456" },
+  { name: "Bosnia", code: "+387", flag: "🇧🇦", maxDigits: 8, format: "##-###-###", placeholder: "61-123-456" },
+  { name: "Brazil", code: "+55", flag: "🇧🇷", maxDigits: 11, format: "(##) #####-####", placeholder: "(11) 91234-5678" },
+  { name: "Bulgaria", code: "+359", flag: "🇧🇬", maxDigits: 9, format: "### ### ###", placeholder: "888 123 456" },
+  { name: "Cambodia", code: "+855", flag: "🇰🇭", maxDigits: 9, format: "##-###-####", placeholder: "12-345-6789" },
+  { name: "Cameroon", code: "+237", flag: "🇨🇲", maxDigits: 9, format: "####-####", placeholder: "6712-3456" },
+  { name: "Chile", code: "+56", flag: "🇨🇱", maxDigits: 9, format: "# ####-####", placeholder: "9 1234-5678" },
+  { name: "China", code: "+86", flag: "🇨🇳", maxDigits: 11, format: "### #### ####", placeholder: "131 2345 6789" },
+  { name: "Colombia", code: "+57", flag: "🇨🇴", maxDigits: 10, format: "### ### ####", placeholder: "321 123 4567" },
+  { name: "Croatia", code: "+385", flag: "🇭🇷", maxDigits: 9, format: "##-###-####", placeholder: "91-234-5678" },
+  { name: "Cyprus", code: "+357", flag: "🇨🇾", maxDigits: 8, format: "##-######", placeholder: "96-123456" },
+  { name: "Czech Republic", code: "+420", flag: "🇨🇿", maxDigits: 9, format: "### ### ###", placeholder: "601 234 567" },
+  { name: "Denmark", code: "+45", flag: "🇩🇰", maxDigits: 8, format: "##-##-##-##", placeholder: "20-12-34-56" },
+  { name: "Ecuador", code: "+593", flag: "🇪🇨", maxDigits: 9, format: "##-###-####", placeholder: "99-123-4567" },
+  { name: "Egypt", code: "+20", flag: "🇪🇬", maxDigits: 10, format: "###-###-####", placeholder: "101-234-5678" },
+  { name: "Ethiopia", code: "+251", flag: "🇪🇹", maxDigits: 9, format: "##-###-####", placeholder: "91-234-5678" },
+  { name: "Finland", code: "+358", flag: "🇫🇮", maxDigits: 10, format: "## ### ####", placeholder: "40 123 4567" },
+  { name: "France", code: "+33", flag: "🇫🇷", maxDigits: 9, format: "# ## ## ## ##", placeholder: "6 12 34 56 78" },
+  { name: "Georgia", code: "+995", flag: "🇬🇪", maxDigits: 9, format: "###-##-##-##", placeholder: "555-12-34-56" },
+  { name: "Germany", code: "+49", flag: "🇩🇪", maxDigits: 11, format: "#### #######", placeholder: "1511 2345678" },
+  { name: "Ghana", code: "+233", flag: "🇬🇭", maxDigits: 9, format: "##-###-####", placeholder: "24-123-4567" },
+  { name: "Greece", code: "+30", flag: "🇬🇷", maxDigits: 10, format: "### ### ####", placeholder: "697 123 4567" },
+  { name: "Hungary", code: "+36", flag: "🇭🇺", maxDigits: 9, format: "##-###-####", placeholder: "20-123-4567" },
+  { name: "Indonesia", code: "+62", flag: "🇮🇩", maxDigits: 12, format: "####-####-####", placeholder: "0812-3456-7890" },
+  { name: "Iran", code: "+98", flag: "🇮🇷", maxDigits: 10, format: "###-###-####", placeholder: "912-345-6789" },
+  { name: "Iraq", code: "+964", flag: "🇮🇶", maxDigits: 10, format: "###-###-####", placeholder: "771-234-5678" },
+  { name: "Ireland", code: "+353", flag: "🇮🇪", maxDigits: 9, format: "## ###-####", placeholder: "85 123-4567" },
+  { name: "Israel", code: "+972", flag: "🇮🇱", maxDigits: 9, format: "##-###-####", placeholder: "52-123-4567" },
+  { name: "Italy", code: "+39", flag: "🇮🇹", maxDigits: 10, format: "### ### ####", placeholder: "312 345 6789" },
+  { name: "Japan", code: "+81", flag: "🇯🇵", maxDigits: 10, format: "##-####-####", placeholder: "90-1234-5678" },
+  { name: "Jordan", code: "+962", flag: "🇯🇴", maxDigits: 9, format: "#-####-####", placeholder: "7-9012-3456" },
+  { name: "Kazakhstan", code: "+7", flag: "🇰🇿", maxDigits: 10, format: "(###) ###-##-##", placeholder: "(701) 234-56-78" },
+  { name: "Kenya", code: "+254", flag: "🇰🇪", maxDigits: 9, format: "###-######", placeholder: "712-345678" },
+  { name: "Kuwait", code: "+965", flag: "🇰🇼", maxDigits: 8, format: "####-####", placeholder: "9123-4567" },
+  { name: "Lebanon", code: "+961", flag: "🇱🇧", maxDigits: 8, format: "##-######", placeholder: "71-123456" },
+  { name: "Libya", code: "+218", flag: "🇱🇾", maxDigits: 9, format: "##-#######", placeholder: "91-1234567" },
+  { name: "Lithuania", code: "+370", flag: "🇱🇹", maxDigits: 8, format: "####-####", placeholder: "6123-4567" },
+  { name: "Luxembourg", code: "+352", flag: "🇱🇺", maxDigits: 9, format: "### ### ###", placeholder: "621 123 456" },
+  { name: "Malaysia", code: "+60", flag: "🇲🇾", maxDigits: 10, format: "##-####-####", placeholder: "12-3456-7890" },
+  { name: "Mexico", code: "+52", flag: "🇲🇽", maxDigits: 10, format: "### ###-####", placeholder: "555 123-4567" },
+  { name: "Morocco", code: "+212", flag: "🇲🇦", maxDigits: 9, format: "##-###-####", placeholder: "61-234-5678" },
+  { name: "Myanmar", code: "+95", flag: "🇲🇲", maxDigits: 10, format: "##-###-####", placeholder: "9-123-4567" },
+  { name: "Nepal", code: "+977", flag: "🇳🇵", maxDigits: 10, format: "##-###-####", placeholder: "98-012-3456" },
+  { name: "Netherlands", code: "+31", flag: "🇳🇱", maxDigits: 9, format: "# ## ## ## ##", placeholder: "6 12 34 56 78" },
+  { name: "New Zealand", code: "+64", flag: "🇳🇿", maxDigits: 9, format: "##-###-####", placeholder: "21-234-5678" },
+  { name: "Nigeria", code: "+234", flag: "🇳🇬", maxDigits: 10, format: "###-###-####", placeholder: "802-123-4567" },
+  { name: "Norway", code: "+47", flag: "🇳🇴", maxDigits: 8, format: "#### ####", placeholder: "4012 3456" },
+  { name: "Oman", code: "+968", flag: "🇴🇲", maxDigits: 8, format: "####-####", placeholder: "9123-4567" },
+  { name: "Peru", code: "+51", flag: "🇵🇪", maxDigits: 9, format: "###-###-###", placeholder: "912-345-678" },
+  { name: "Philippines", code: "+63", flag: "🇵🇭", maxDigits: 10, format: "###-###-####", placeholder: "917-123-4567" },
+  { name: "Poland", code: "+48", flag: "🇵🇱", maxDigits: 9, format: "###-###-###", placeholder: "512-345-678" },
+  { name: "Portugal", code: "+351", flag: "🇵🇹", maxDigits: 9, format: "###-###-###", placeholder: "912-345-678" },
+  { name: "Qatar", code: "+974", flag: "🇶🇦", maxDigits: 8, format: "####-####", placeholder: "3312-3456" },
+  { name: "Romania", code: "+40", flag: "🇷🇴", maxDigits: 9, format: "###-###-###", placeholder: "712-345-678" },
+  { name: "Russia", code: "+7", flag: "🇷🇺", maxDigits: 10, format: "(###) ###-##-##", placeholder: "(912) 345-67-89" },
+  { name: "Singapore", code: "+65", flag: "🇸🇬", maxDigits: 8, format: "####-####", placeholder: "9123-4567" },
+  { name: "Slovenia", code: "+386", flag: "🇸🇮", maxDigits: 8, format: "##-###-###", placeholder: "31-234-567" },
+  { name: "Somalia", code: "+252", flag: "🇸🇴", maxDigits: 8, format: "##-######", placeholder: "61-123456" },
+  { name: "South Africa", code: "+27", flag: "🇿🇦", maxDigits: 9, format: "##-###-####", placeholder: "71-234-5678" },
+  { name: "South Korea", code: "+82", flag: "🇰🇷", maxDigits: 10, format: "###-####-####", placeholder: "010-1234-5678" },
+  { name: "Spain", code: "+34", flag: "🇪🇸", maxDigits: 9, format: "### ### ###", placeholder: "612 345 678" },
+  { name: "Sri Lanka", code: "+94", flag: "🇱🇰", maxDigits: 9, format: "##-###-####", placeholder: "71-234-5678" },
+  { name: "Sudan", code: "+249", flag: "🇸🇩", maxDigits: 9, format: "##-###-####", placeholder: "91-234-5678" },
+  { name: "Sweden", code: "+46", flag: "🇸🇪", maxDigits: 9, format: "##-###-####", placeholder: "70-123-4567" },
+  { name: "Switzerland", code: "+41", flag: "🇨🇭", maxDigits: 9, format: "##-###-####", placeholder: "76-234-5678" },
+  { name: "Syria", code: "+963", flag: "🇸🇾", maxDigits: 9, format: "###-###-###", placeholder: "944-123-456" },
+  { name: "Taiwan", code: "+886", flag: "🇹🇼", maxDigits: 9, format: "####-######", placeholder: "0912-345678" },
+  { name: "Tanzania", code: "+255", flag: "🇹🇿", maxDigits: 9, format: "###-###-###", placeholder: "712-345-678" },
+  { name: "Thailand", code: "+66", flag: "🇹🇭", maxDigits: 9, format: "##-####-####", placeholder: "81-2345-6789" },
+  { name: "Tunisia", code: "+216", flag: "🇹🇳", maxDigits: 8, format: "##-######", placeholder: "20-123456" },
+  { name: "Turkey", code: "+90", flag: "🇹🇷", maxDigits: 10, format: "(###) ###-####", placeholder: "(532) 123-4567" },
+  { name: "Uganda", code: "+256", flag: "🇺🇬", maxDigits: 9, format: "###-######", placeholder: "712-345678" },
+  { name: "Ukraine", code: "+380", flag: "🇺🇦", maxDigits: 9, format: "##-###-##-##", placeholder: "50-123-45-67" },
+  { name: "Uruguay", code: "+598", flag: "🇺🇾", maxDigits: 9, format: "#-###-##-##", placeholder: "9-412-34-56" },
+  { name: "Uzbekistan", code: "+998", flag: "🇺🇿", maxDigits: 9, format: "##-###-##-##", placeholder: "90-123-45-67" },
+  { name: "Venezuela", code: "+58", flag: "🇻🇪", maxDigits: 10, format: "(###) ###-####", placeholder: "(412) 123-4567" },
+  { name: "Vietnam", code: "+84", flag: "🇻🇳", maxDigits: 9, format: "###-####-###", placeholder: "091-2345-678" },
+  { name: "Yemen", code: "+967", flag: "🇾🇪", maxDigits: 9, format: "###-###-###", placeholder: "712-345-678" },
+  { name: "Zimbabwe", code: "+263", flag: "🇿🇼", maxDigits: 9, format: "##-###-####", placeholder: "71-234-5678" },
+];
+
+// Applies a format mask (# = digit, other chars are literal separators)
+function formatPhoneNumber(digits, format) {
+  if (!format || !digits) return digits;
+  let result = "";
+  let di = 0;
+  for (let i = 0; i < format.length; i++) {
+    if (di >= digits.length) break;
+    if (format[i] === "#") {
+      result += digits[di++];
+    } else {
+      // Only emit a separator when there are already some digits typed
+      if (di > 0) result += format[i];
+    }
+  }
+  return result;
+}
+
 function parseCSV(text) {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length === 0) return [];
@@ -101,6 +218,9 @@ export default function NetworkMapClient() {
     tags: [],
     notes: "",
   });
+  // Phone country code state — defaults to Pakistan
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRY_CODES[0]);
+  const [phoneRaw, setPhoneRaw] = useState(""); // raw digits only, no separators
 
   async function refresh() {
     try {
@@ -202,10 +322,14 @@ export default function NetworkMapClient() {
 
   async function addManual() {
     if (!manual.name.trim()) return;
+    // Compose full phone: country code + formatted local number
+    const fullPhone = phoneRaw
+      ? `${selectedCountry.code} ${formatPhoneNumber(phoneRaw, selectedCountry.format)}`
+      : "";
     try {
       const created = await api("/api/contacts", {
         method: "POST",
-        body: JSON.stringify(manual),
+        body: JSON.stringify({ ...manual, phone: fullPhone }),
       });
       setContacts((prev) => [created, ...prev]);
       setManual({
@@ -217,6 +341,7 @@ export default function NetworkMapClient() {
         tags: [],
         notes: "",
       });
+      setPhoneRaw("");
     } catch (e) {
       setError(e.message);
     }
@@ -442,12 +567,42 @@ export default function NetworkMapClient() {
               onChange={(e) => setManual({ ...manual, name: e.target.value })}
             />
             <div style={styles.formRow}>
-              <input
-                style={styles.input}
-                placeholder="Phone"
-                value={manual.phone}
-                onChange={(e) => setManual({ ...manual, phone: e.target.value })}
-              />
+              {/* Phone: country code dropdown + formatted number input */}
+              <div style={styles.phoneGroup}>
+                <select
+                  style={styles.countrySelect}
+                  value={selectedCountry.code + "__" + selectedCountry.name}
+                  onChange={(e) => {
+                    const found = COUNTRY_CODES.find(
+                      (c) => c.code + "__" + c.name === e.target.value
+                    );
+                    if (found) {
+                      setSelectedCountry(found);
+                      setPhoneRaw(""); // reset digits when country changes
+                    }
+                  }}
+                  title="Country code"
+                >
+                  {COUNTRY_CODES.map((c) => (
+                    <option key={c.code + "__" + c.name} value={c.code + "__" + c.name}>
+                      {c.flag} {c.code} — {c.name}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  style={styles.phoneInput}
+                  placeholder={selectedCountry.placeholder}
+                  value={formatPhoneNumber(phoneRaw, selectedCountry.format)}
+                  onChange={(e) => {
+                    // Strip everything except digits, cap at maxDigits
+                    const digits = e.target.value
+                      .replace(/\D/g, "")
+                      .slice(0, selectedCountry.maxDigits);
+                    setPhoneRaw(digits);
+                  }}
+                  inputMode="numeric"
+                />
+              </div>
               <input
                 style={styles.input}
                 placeholder="Email"
@@ -782,4 +937,37 @@ const styles = {
   },
   form: { display: "flex", flexDirection: "column", gap: "0.6rem", maxWidth: "560px" },
   formRow: { display: "flex", gap: "0.6rem" },
+  // Phone field styles
+  phoneGroup: {
+    display: "flex",
+    flex: 1,
+    borderRadius: "8px",
+    border: "1px solid #2A303B",
+    overflow: "hidden",
+    background: "#1C222C",
+  },
+  countrySelect: {
+    background: "#161C25",
+    border: "none",
+    borderRight: "1px solid #2A303B",
+    color: "#D9A441",
+    padding: "0.55rem 0.5rem",
+    fontSize: "13px",
+    cursor: "pointer",
+    outline: "none",
+    flexShrink: 0,
+    maxWidth: "210px",
+  },
+  phoneInput: {
+    flex: 1,
+    background: "transparent",
+    border: "none",
+    color: "#E7E5DE",
+    padding: "0.55rem 0.75rem",
+    fontSize: "14px",
+    outline: "none",
+    fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace",
+    letterSpacing: "0.05em",
+    minWidth: 0,
+  },
 };
